@@ -20,8 +20,8 @@ export default function ArticleCard({ article, onClick, isRead = false }) {
         )}
 
         {/* 카테고리 · 읽기 시간 배지 — 우측 상단 */}
-        <div className="absolute top-2.5 right-2.5 bg-black/50 rounded-full px-2.5 py-1">
-          <span className="text-[11px] font-semibold text-white">{badgeText}</span>
+        <div className="absolute top-2.5 right-2.5 bg-black/50 rounded-full px-2.5 py-[8px] flex items-center">
+          <span className="text-[11px] font-semibold text-white leading-none">{badgeText}</span>
         </div>
 
         {/* 읽음 표시 — 중앙 원형 체크 */}

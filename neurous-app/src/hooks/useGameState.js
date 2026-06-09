@@ -26,10 +26,15 @@ export const useGameState = () => {
 
   const getWeeklyAttendance = useCallback(() => {
     const attendance = storage.getAttendance();
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0=일, 1=월, ..., 6=토
+    const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - daysSinceMonday);
     const week = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
       week.push(d.toISOString().slice(0, 10));
     }
     return week.map(day => ({ date: day, checked: attendance.includes(day) }));

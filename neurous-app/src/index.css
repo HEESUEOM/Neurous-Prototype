@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Nanum Square Round';
+  src: url('/fonts/NanumSquareRound-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nanum Square Round';
+  src: url('/fonts/NanumSquareRound-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nanum Square Round';
+  src: url('/fonts/NanumSquareRound-ExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
@@ -15,7 +39,7 @@ html, body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -27,6 +51,7 @@ body {
 
 .font-title {
   font-family: 'Nanum Square Round', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 800;
 }
 
 .hide-scrollbar::-webkit-scrollbar {

@@ -68,7 +68,7 @@ export default function Article() {
           </div>
         )}
 
-        <div className="flex-1 px-5 pt-5 pb-32">
+        <div className={`px-5 pt-5 ${alreadyRead ? 'pb-12' : 'pb-32'}`}>
           {/* 카테고리 */}
           <span className="text-[12px] font-semibold text-[#6F44F5] uppercase tracking-wide">
             {article.category}
@@ -108,24 +108,25 @@ export default function Article() {
         </div>
       </div>
 
-      {/* 고정 하단 버튼 */}
-      <div
-        className="fixed bottom-0 left-0 right-0 flex justify-center z-40"
-      >
+      {/* 고정 하단 버튼 — 이미 읽은 글은 더 이상 액션이 없으므로 영역 자체를 노출하지 않는다 */}
+      {!alreadyRead && (
         <div
-          className="w-full max-w-[430px] bg-white border-t border-gray-100 px-5 pt-3"
-          style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
+          className="fixed bottom-0 left-0 right-0 flex justify-center z-40"
         >
-          <button
-            className="w-full text-white rounded-2xl py-4 text-[17px] font-semibold active:opacity-80 disabled:opacity-40"
-            style={alreadyRead ? {} : { background: 'linear-gradient(135deg, #7C55F6, #6F44F5)' }}
-            onClick={handleComplete}
-            disabled={alreadyRead}
+          <div
+            className="w-full max-w-[430px] bg-white border-t border-gray-100 px-5 pt-3"
+            style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
           >
-            {alreadyRead ? '오늘 이미 읽은 글이에요' : '다 읽었어요'}
-          </button>
+            <button
+              className="w-full text-white rounded-2xl py-4 text-[17px] font-semibold active:opacity-80"
+              style={{ background: 'linear-gradient(135deg, #7C55F6, #6F44F5)' }}
+              onClick={handleComplete}
+            >
+              다 읽었어요
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 보상 팝업 */}
       {rewardResult && (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStorage } from '../hooks/useStorage';
 
@@ -7,6 +7,17 @@ export default function CodeEntry() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { setUserCode } = useStorage();
+
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const prev = meta?.getAttribute('content') ?? '#ffffff';
+    if (meta) meta.setAttribute('content', '#F0ECFF');
+    document.body.style.background = 'linear-gradient(160deg, #F0ECFF 0%, #ffffff 55%)';
+    return () => {
+      if (meta) meta.setAttribute('content', prev);
+      document.body.style.background = '';
+    };
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -45,7 +56,7 @@ export default function CodeEntry() {
               type="text"
               value={code}
               onChange={e => { setCode(e.target.value); setError(''); }}
-              placeholder="예: P01"
+              placeholder=""
               maxLength={10}
               autoComplete="off"
               autoCapitalize="characters"
