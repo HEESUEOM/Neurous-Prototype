@@ -1,9 +1,18 @@
+import { useEffect, useRef } from 'react';
 import { LEVELS, getLevelByXP, getNextLevel } from '../data/levels';
 import { useGameState } from '../hooks/useGameState';
 import NavHeader from '../components/layout/NavHeader';
+import { track } from '../utils/analytics';
 
 export default function GrowthStages() {
   const { storage } = useGameState();
+
+  const viewTracked = useRef(false);
+  useEffect(() => {
+    if (viewTracked.current) return;
+    viewTracked.current = true;
+    track('growth_stage_view');
+  }, []);
 
   const xp = storage.getXP();
   const currentLevelInfo = getLevelByXP(xp);
