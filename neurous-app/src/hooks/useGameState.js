@@ -159,10 +159,11 @@ export const useGameState = () => {
       }
     }
 
+    const levelBefore = getLevelByXP(storage.getXP()).level;
     const newXP = addXP(totalXP);
     const { leveledUp, newLevel } = checkAndApplyLevelUp(newXP);
 
-    return { rewards, totalXP, newXP, leveledUp, newLevel };
+    return { rewards, totalXP, newXP, leveledUp, newLevel, levelBefore };
   }, []);
 
   // 퀴즈 완료 처리
@@ -199,10 +200,11 @@ export const useGameState = () => {
       }
     }
 
+    const levelBefore = getLevelByXP(storage.getXP()).level;
     const newXP = addXP(totalXP);
     const { leveledUp, newLevel } = checkAndApplyLevelUp(newXP);
 
-    return { rewards, totalXP, newXP, leveledUp, newLevel, isCorrect };
+    return { rewards, totalXP, newXP, leveledUp, newLevel, isCorrect, levelBefore };
   }, []);
 
   return {

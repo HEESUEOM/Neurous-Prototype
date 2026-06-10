@@ -47,7 +47,7 @@ export default function BottomTabBar() {
         <div className="flex">
           <button
             className="flex-1 flex flex-col items-center gap-0.5 py-2 active:opacity-70"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/', { replace: true })}
           >
             <HomeIcon active={isHome} />
             <span className={`text-[10px] font-medium ${isHome ? 'text-[#6F44F5]' : 'text-[#8E8E93]'}`}>
@@ -56,7 +56,7 @@ export default function BottomTabBar() {
           </button>
           <button
             className="flex-1 flex flex-col items-center gap-0.5 py-2 active:opacity-70"
-            onClick={() => navigate('/level')}
+            onClick={() => navigate('/level', { replace: true })}
           >
             <LevelIcon active={isLevel} />
             <span className={`text-[10px] font-medium ${isLevel ? 'text-[#6F44F5]' : 'text-[#8E8E93]'}`}>

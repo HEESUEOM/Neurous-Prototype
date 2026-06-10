@@ -9,7 +9,11 @@ export default function NavHeader({ title, onBack }) {
   };
 
   return (
-    <div className="flex items-center h-11 px-4 bg-white border-b border-gray-100">
+    <div
+      className="bg-white border-b border-gray-100 px-4"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
+    <div className="flex items-center h-11">
       <button
         className="flex items-center gap-1 text-[#6F44F5] active:opacity-60 mr-2"
         onClick={handleBack}
@@ -24,6 +28,7 @@ export default function NavHeader({ title, onBack }) {
           {title}
         </span>
       )}
+    </div>
     </div>
   );
 }

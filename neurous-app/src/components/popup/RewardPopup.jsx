@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { track } from '../../utils/analytics';
 
 const LEVEL_UP_CHARACTERS = {
   2: '/assets/Character_Lv.2.png',
@@ -11,7 +12,6 @@ const REWARD_LABEL_MAP = {
   '퀴즈 정답':           '퀴즈 참여',
   '퀴즈 참여':           '퀴즈 참여',
   '데일리 출석':         '데일리 출석',
-  '위클리 출석':         '위클리 출석',
   '전체 미션 완료 보너스': '전체 미션 완료',
 };
 
@@ -36,8 +36,19 @@ const RewardTags = ({ rewards }) => (
 export default function RewardPopup({ result, articleId, onClose }) {
   const navigate = useNavigate();
 
+  const viewTracked = useRef(false);
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+    if (result && !viewTracked.current) {
+      viewTracked.current = true;
+      const { totalXP, leveledUp, newLevel, levelBefore } = result;
+      track('reward_popup_view', {
+        reward_type: leveledUp ? 'xp+level_up' : 'xp',
+        xp_amount: totalXP,
+        level_before: levelBefore ?? (newLevel?.level ?? 1),
+        level_after: newLevel?.level ?? 1,
+      });
+    }
     return () => { document.body.style.overflow = ''; };
   }, []);
 
@@ -49,13 +60,15 @@ export default function RewardPopup({ result, articleId, onClose }) {
   const levelUpCharacterSrc = LEVEL_UP_CHARACTERS[newLevel?.level] ?? characterSrc;
 
   const handleNextArticle = () => {
+    track('next_content_click', { article_id: articleId });
     onClose();
-    navigate(`/article/next`, { state: { source: 'next_article', prevId: articleId } });
+    navigate(`/article/next`, { state: { source: 'next_article', prevId: articleId }, replace: true });
   };
 
   const handleQuiz = () => {
+    track('quiz_enter', { article_id: articleId });
     onClose();
-    navigate(`/quiz/${articleId}`);
+    navigate(`/quiz/${articleId}`, { replace: true });
   };
 
   const handleClose = () => {
@@ -91,12 +104,22 @@ export default function RewardPopup({ result, articleId, onClose }) {
                   <RewardTags rewards={rewards} />
                 </div>
                 <div className="flex flex-col gap-[14px] items-center w-full">
-                  <button
-                    className="w-full bg-[#6F44F5] text-white rounded-2xl py-3 text-[16px] font-bold active:opacity-80"
-                    onClick={handleNextArticle}
-                  >
-                    다음 글 보기
-                  </button>
+                  <div className="flex flex-col gap-3 w-full">
+                    <button
+                      className="w-full bg-[#6F44F5] text-white rounded-2xl py-3 text-[16px] font-bold active:opacity-80"
+                      onClick={handleNextArticle}
+                    >
+                      다음 글 보기
+                    </button>
+                    {articleId && (
+                      <button
+                        className="w-full bg-white border border-[#D9DCE5] text-[#9EA5BB] rounded-2xl py-3 text-[16px] font-semibold active:opacity-80"
+                        onClick={handleQuiz}
+                      >
+                        퀴즈 풀고 더 얻기
+                      </button>
+                    )}
+                  </div>
                   <button
                     className="text-[#9EA5BB] text-[14px] active:opacity-60"
                     onClick={handleClose}
@@ -122,8 +145,8 @@ export default function RewardPopup({ result, articleId, onClose }) {
               </div>
               <div className="bg-white rounded-bl-[20px] rounded-br-[20px] pt-4 pb-7 px-5 flex flex-col gap-5">
                 <RewardTags rewards={rewards} />
-                <div className="flex flex-col gap-[14px]">
-                  <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-[14px] items-center w-full">
+                  <div className="flex flex-col gap-3 w-full">
                     <button
                       className="w-full bg-[#6F44F5] text-white rounded-2xl py-3 text-[16px] font-bold active:opacity-80"
                       onClick={handleNextArticle}

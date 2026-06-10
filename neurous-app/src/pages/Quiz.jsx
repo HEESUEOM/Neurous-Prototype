@@ -4,6 +4,7 @@ import { articles } from '../data/articles';
 import { useGameState } from '../hooks/useGameState';
 import NavHeader from '../components/layout/NavHeader';
 import RewardPopup from '../components/popup/RewardPopup';
+import { track } from '../utils/analytics';
 
 export default function Quiz() {
   const { articleId } = useParams();
@@ -34,6 +35,7 @@ export default function Quiz() {
 
   const handleConfirm = () => {
     const isCorrect = selected === quiz.correct_answer;
+    track('quiz_complete', { article_id: articleId, is_correct: isCorrect });
     const result = processQuizComplete(articleId, isCorrect);
     setRewardResult(result || { rewards: [], totalXP: 0, newXP: 0, leveledUp: false, newLevel: { level: 1 }, isCorrect });
   };
@@ -123,7 +125,7 @@ export default function Quiz() {
               style={{ background: 'linear-gradient(135deg, #7C55F6, #6F44F5)' }}
               onClick={handleConfirm}
             >
-              결과 확인하기
+              완료
             </button>
           )}
         </div>

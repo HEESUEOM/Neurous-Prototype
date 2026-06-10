@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStorage } from '../hooks/useStorage';
+import { identifyUser } from '../utils/analytics';
 
 export default function CodeEntry() {
   const [code, setCode] = useState('');
@@ -26,6 +27,7 @@ export default function CodeEntry() {
       setError('참여 코드를 입력해주세요.');
       return;
     }
+    identifyUser(trimmed);
     setUserCode(trimmed);
     navigate('/', { replace: true });
   };

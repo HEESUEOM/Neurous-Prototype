@@ -1,9 +1,10 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { articles } from '../data/articles';
 import { useGameState } from '../hooks/useGameState';
 import NavHeader from '../components/layout/NavHeader';
 import RewardPopup from '../components/popup/RewardPopup';
+import { track } from '../utils/analytics';
 
 export default function Article() {
   const { id } = useParams();
@@ -34,6 +35,13 @@ export default function Article() {
 
   const article = resolveArticle();
 
+  const startTracked = useRef(false);
+  useEffect(() => {
+    if (!article || startTracked.current) return;
+    startTracked.current = true;
+    track('article_start', { article_id: article.id });
+  }, [article?.id]);
+
   if (!article) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
@@ -45,9 +53,10 @@ export default function Article() {
   const alreadyRead = hasReadArticleToday(article.id);
 
   const handleComplete = () => {
+    track('article_complete', { article_id: article.id });
     const result = processArticleComplete(article.id, source);
     if (!result) {
-      navigate(`/quiz/${article.id}`);
+      navigate(`/quiz/${article.id}`, { replace: true });
       return;
     }
     setRewardResult(result);

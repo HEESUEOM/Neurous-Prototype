@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { getLevelByXP, getNextLevel } from '../data/levels';
+import { articles } from '../data/articles';
+import { track } from '../utils/analytics';
 
 const BG_TOP_COLORS = { 1: '#BDD7FB', 2: '#CDE8EF', 3: '#DAE6B9' };
 import MissionCard from '../components/mission/MissionCard';
@@ -44,6 +46,14 @@ export default function MyLevel() {
 
   const bgImage = `/assets/bg_lv${Math.min(levelInfo.level, 3)}.png`;
   const bgTopColor = BG_TOP_COLORS[Math.min(levelInfo.level, 3)];
+
+  const viewTracked = useRef(false);
+  useEffect(() => {
+    if (!viewTracked.current) {
+      viewTracked.current = true;
+      track('character_growth_view', { character_level: levelInfo.level });
+    }
+  }, []);
 
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -148,6 +158,26 @@ export default function MyLevel() {
           <p className="text-[16px] text-[#9EA5BB]">진행 중인 미션을 완료하면 새로운 미션이 열려요!</p>
         </div>
         <MissionCard completedMissions={completedMissions} />
+
+        {/* 테스트용 — 오늘 읽기 기록 초기화 */}
+        <div className="mt-10 flex justify-center">
+          <button
+            className="text-[#CACED9] text-[12px] active:opacity-50"
+            onClick={() => {
+              const today = new Date().toISOString().slice(0, 10);
+              const history = storage.getArticleReadHistory();
+              storage.setArticleReadHistory(history.filter(h => h.date !== today));
+              storage.setAttendance(storage.getAttendance().filter(d => d !== today));
+              storage.setCompletedMissions([]);
+              storage.setLevel(1);
+              storage.setXP(0);
+              localStorage.removeItem('all_missions_bonus');
+              articles.forEach(a => localStorage.removeItem(`quiz_done_${a.id}`));
+            }}
+          >
+            오늘 읽기 기록 초기화
+          </button>
+        </div>
       </div>
 
       <BottomTabBar />
