@@ -35,7 +35,7 @@ export default function Quiz() {
 
   const handleConfirm = () => {
     const isCorrect = selected === quiz.correct_answer;
-    track('quiz_complete', { article_id: articleId, is_correct: isCorrect });
+    track('quiz_complete', { article_id: articleId, category: article.category, is_correct: isCorrect });
     const result = processQuizComplete(articleId, isCorrect);
     setRewardResult(result || { rewards: [], totalXP: 0, newXP: 0, leveledUp: false, newLevel: { level: 1 }, isCorrect });
   };
@@ -135,6 +135,7 @@ export default function Quiz() {
         <RewardPopup
           result={rewardResult}
           articleId={null}
+          sourceArticleId={articleId}
           onClose={() => setRewardResult(null)}
         />
       )}

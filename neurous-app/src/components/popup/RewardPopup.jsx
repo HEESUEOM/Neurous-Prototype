@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
+import { articles } from '../../data/articles';
 import { track } from '../../utils/analytics';
 
 const LEVEL_UP_CHARACTERS = {
@@ -33,8 +34,13 @@ const RewardTags = ({ rewards }) => (
   </div>
 );
 
-export default function RewardPopup({ result, articleId, onClose }) {
+// articleId: '퀴즈 풀고 더 얻기' 버튼 노출 여부 및 '다음 글 보기'의 기준(prevId)·퀴즈 이동 대상으로 쓰이는
+// 기존 UI/내비게이션 전용 값 — 퀴즈 완료 팝업에서는 의도적으로 null이 전달된다(기존 동작, 변경하지 않음).
+// sourceArticleId: 이 팝업이 어떤 글에 대한 보상인지 나타내는 분석 전용 값 — 진입 경로와 무관하게 항상
+// 실제 글 id가 전달되어, article_id/category가 이벤트 payload에 항상 일관되게 포함되도록 한다.
+export default function RewardPopup({ result, articleId, sourceArticleId, onClose }) {
   const navigate = useNavigate();
+  const category = articles.find(a => a.id === sourceArticleId)?.category;
 
   const viewTracked = useRef(false);
   useEffect(() => {
@@ -43,10 +49,12 @@ export default function RewardPopup({ result, articleId, onClose }) {
       viewTracked.current = true;
       const { totalXP, leveledUp, newLevel, levelBefore } = result;
       track('reward_popup_view', {
+        article_id: sourceArticleId,
         reward_type: leveledUp ? 'xp+level_up' : 'xp',
         xp_amount: totalXP,
         level_before: levelBefore ?? (newLevel?.level ?? 1),
         level_after: newLevel?.level ?? 1,
+        category,
       });
     }
     return () => { document.body.style.overflow = ''; };
@@ -60,13 +68,14 @@ export default function RewardPopup({ result, articleId, onClose }) {
   const levelUpCharacterSrc = LEVEL_UP_CHARACTERS[newLevel?.level] ?? characterSrc;
 
   const handleNextArticle = () => {
-    track('next_content_click', { article_id: articleId });
+    track('next_content_click', { article_id: sourceArticleId, category });
     onClose();
+    // prevId는 '다음 글' 계산 기준(추천 뉴스 로직)이므로 기존 그대로 articleId를 사용한다 — 변경하지 않음.
     navigate(`/article/next`, { state: { source: 'next_article', prevId: articleId }, replace: true });
   };
 
   const handleQuiz = () => {
-    track('quiz_enter', { article_id: articleId });
+    track('quiz_enter', { article_id: sourceArticleId, category });
     onClose();
     navigate(`/quiz/${articleId}`, { replace: true });
   };

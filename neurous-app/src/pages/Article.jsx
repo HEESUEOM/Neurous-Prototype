@@ -32,7 +32,7 @@ export default function Article() {
   useEffect(() => {
     if (!article || startTracked.current) return;
     startTracked.current = true;
-    track('article_start', { article_id: article.id });
+    track('article_start', { article_id: article.id, category: article.category });
   }, [article?.id]);
 
   if (!article) {
@@ -50,7 +50,7 @@ export default function Article() {
   const hasBottomCTA = !alreadyRead || showQuizCTA;
 
   const handleComplete = () => {
-    track('article_complete', { article_id: article.id });
+    track('article_complete', { article_id: article.id, category: article.category });
     const result = processArticleComplete(article.id, source);
     if (!result) {
       navigate(`/quiz/${article.id}`, { replace: true });
@@ -151,6 +151,7 @@ export default function Article() {
         <RewardPopup
           result={rewardResult}
           articleId={article.id}
+          sourceArticleId={article.id}
           onClose={() => setRewardResult(null)}
         />
       )}
