@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useRef, useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { MISSIONS } from '../data/missions';
@@ -44,7 +44,14 @@ function MissionSlide({ mission, isCompleted, isActive, isLocked }) {
 
 export default function Home() {
   const navigate = useNavigate();
+  const { key } = useLocation();
   const { storage, hasReadArticleToday, getRecommendedArticles } = useGameState();
+
+  // 홈 탭을 다시 선택하거나 다른 화면에서 돌아왔을 때 항상 스크롤을 맨 위로 초기화한다.
+  // location key는 같은 경로로 재진입(재선택)해도 매번 새로 발급되므로 두 경우 모두 커버된다.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [key]);
   const completedMissions = storage.getCompletedMissions();
   const rawActiveIndex = MISSIONS.findIndex(m => !completedMissions.includes(m.id));
   const activeIndex = rawActiveIndex >= 0 ? rawActiveIndex : 0;

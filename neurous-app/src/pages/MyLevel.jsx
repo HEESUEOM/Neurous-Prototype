@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { getLevelByXP, getNextLevel } from '../data/levels';
@@ -35,7 +35,14 @@ const DayDot = ({ date, checked, isToday }) => {
 
 export default function MyLevel() {
   const navigate = useNavigate();
+  const { key } = useLocation();
   const { storage, getWeeklyAttendance } = useGameState();
+
+  // 나의 레벨 탭을 다시 선택하거나 다른 화면에서 돌아왔을 때 항상 스크롤을 맨 위로 초기화한다.
+  // (홈 화면과 동일한 정책 — location key는 같은 경로로 재진입해도 매번 새로 발급된다.)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [key]);
 
   const xp = storage.getXP();
   const levelInfo = getLevelByXP(xp);
