@@ -6,6 +6,10 @@ import { articles } from '../data/articles';
 import { track } from '../utils/analytics';
 
 const BG_TOP_COLORS = { 1: '#BDD7FB', 2: '#CDE8EF', 3: '#DAE6B9' };
+
+// 프로토타입 테스트 완료로 UI에서만 숨김 처리 — 초기화 기능 자체는 유지한다.
+// 다시 노출하려면 이 값을 true로 바꾸면 된다.
+const SHOW_DEV_RESET_BUTTON = false;
 import MissionCard from '../components/mission/MissionCard';
 import BottomTabBar from '../components/layout/BottomTabBar';
 
@@ -173,26 +177,28 @@ export default function MyLevel() {
         </div>
         <MissionCard completedMissions={completedMissions} />
 
-        {/* 테스트용 — 오늘 읽기 기록 초기화 */}
-        <div className="mt-10 flex justify-center">
-          <button
-            className="text-[#CACED9] text-[12px] active:opacity-50"
-            onClick={() => {
-              const today = new Date().toISOString().slice(0, 10);
-              const history = storage.getArticleReadHistory();
-              storage.setArticleReadHistory(history.filter(h => h.date !== today));
-              storage.setAttendance(storage.getAttendance().filter(d => d !== today));
-              storage.setCompletedMissions([]);
-              storage.setLevel(1);
-              storage.setXP(0);
-              localStorage.removeItem('all_missions_bonus');
-              articles.forEach(a => localStorage.removeItem(`quiz_done_${a.id}`));
-              storage.setConsumedOrders([]);
-            }}
-          >
-            오늘 읽기 기록 초기화
-          </button>
-        </div>
+        {/* 테스트용 — 오늘 읽기 기록 초기화 (프로토타입 테스트 완료로 UI만 숨김, 기능은 유지) */}
+        {SHOW_DEV_RESET_BUTTON && (
+          <div className="mt-10 flex justify-center">
+            <button
+              className="text-[#CACED9] text-[12px] active:opacity-50"
+              onClick={() => {
+                const today = new Date().toISOString().slice(0, 10);
+                const history = storage.getArticleReadHistory();
+                storage.setArticleReadHistory(history.filter(h => h.date !== today));
+                storage.setAttendance(storage.getAttendance().filter(d => d !== today));
+                storage.setCompletedMissions([]);
+                storage.setLevel(1);
+                storage.setXP(0);
+                localStorage.removeItem('all_missions_bonus');
+                articles.forEach(a => localStorage.removeItem(`quiz_done_${a.id}`));
+                storage.setConsumedOrders([]);
+              }}
+            >
+              오늘 읽기 기록 초기화
+            </button>
+          </div>
+        )}
       </div>
 
       <BottomTabBar />
