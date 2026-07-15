@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useStorage } from './useStorage';
 import { getLevelByXP, getNextLevel, XP_REWARDS } from '../data/levels';
 import { MISSIONS, ALL_MISSIONS_BONUS_XP } from '../data/missions';
+import { articles, ARTICLES_BY_ORDER } from '../data/articles';
 
 export const useGameState = () => {
   const storage = useStorage();
@@ -98,6 +99,62 @@ export const useGameState = () => {
     return history.some(h => h.articleId === articleId && h.date === today);
   }, []);
 
+  // 소진 기록을 읽을 때마다 안전하게 정합성을 보정한다 — 정상 흐름에서는 markOrderConsumed가 12개를
+  // 다 채우는 순간 즉시 리셋하지만, 어떤 이유로든 리셋 시점을 놓쳐 소진 기록이 전체(또는 그 이상)로 남아있으면
+  // 추천 리스트가 계속 빈 상태로 보이게 된다. 읽는 시점에도 같은 조건을 한 번 더 확인해 즉시 자가 복구한다.
+  const getConsumedOrdersSafe = useCallback(() => {
+    const consumed = storage.getConsumedOrders();
+    if (consumed.length >= ARTICLES_BY_ORDER.length) {
+      storage.setConsumedOrders([]);
+      return [];
+    }
+    return consumed;
+  }, []);
+
+  // 추천 순서(order) 기준 노출 큐 — 완독한 order를 소진 처리하고, 전체를 다 소진하면 다음 사이클로 리셋한다.
+  const markOrderConsumed = useCallback((articleId) => {
+    const article = articles.find(a => a.id === articleId);
+    if (!article) return;
+    const consumed = getConsumedOrdersSafe();
+    if (consumed.includes(article.order)) return;
+    const updated = [...consumed, article.order];
+    storage.setConsumedOrders(updated.length >= ARTICLES_BY_ORDER.length ? [] : updated);
+  }, []);
+
+  // 홈 추천 뉴스는 항상 정확히 count(3)개를 유지한다 — 아직 읽지 않은 뉴스를 order 순서로 먼저 채우고,
+  // 사이클이 거의 소진되어 미읽 뉴스가 count보다 적게 남은 경우에는 이미 읽은(체크 표시된) 뉴스를
+  // order 순서로 이어 붙여 부족한 자리를 채운다. 이 계산은 홈 진입 경로(글 읽기/다음 글 보기/전체 순환 등)와
+  // 무관하게 항상 동일하게 적용된다.
+  const getRecommendedArticles = useCallback((count = 3) => {
+    const consumed = getConsumedOrdersSafe();
+    const unread = ARTICLES_BY_ORDER.filter(a => !consumed.includes(a.order));
+    if (unread.length >= count) return unread.slice(0, count);
+    const read = ARTICLES_BY_ORDER.filter(a => consumed.includes(a.order));
+    return [...unread, ...read].slice(0, count);
+  }, []);
+
+  // '다음 글 보기' — 현재 글의 order 다음부터 순환 탐색하며, 이미 읽은(소진된) order는 모두 건너뛴다.
+  // 읽지 않은 order가 남아있는 동안에는 이미 읽은 뉴스가 절대 다시 노출되지 않는다.
+  const getNextArticle = useCallback((currentArticleId) => {
+    const total = ARTICLES_BY_ORDER.length;
+    const current = articles.find(a => a.id === currentArticleId);
+    const consumed = getConsumedOrdersSafe();
+
+    if (!current) {
+      const unread = ARTICLES_BY_ORDER.filter(a => !consumed.includes(a.order));
+      return unread[0] || ARTICLES_BY_ORDER[0];
+    }
+
+    for (let step = 1; step <= total; step++) {
+      const order = ((current.order - 1 + step) % total) + 1;
+      if (!consumed.includes(order)) {
+        return ARTICLES_BY_ORDER.find(a => a.order === order);
+      }
+    }
+    // 모든 order가 소진된 경우는 발생하지 않지만(전체 소진 시 즉시 리셋), 방어적으로 다음 순서를 반환한다.
+    return ARTICLES_BY_ORDER.find(a => a.order === (current.order % total) + 1);
+  }, []);
+
   const hasCompletedQuizToday = useCallback((articleId) => {
     const key = `quiz_done_${articleId}`;
     return localStorage.getItem(key) === getTodayKey();
@@ -110,6 +167,11 @@ export const useGameState = () => {
 
   // 읽기 완료 처리 — 보상 계산 후 반환
   const processArticleComplete = useCallback((articleId, source) => {
+    // '홈 추천 뉴스 1개 읽기' 미션은 진입 경로(source)가 아니라, 완독 처리로 소진되기 "직전" 시점에
+    // 이 뉴스가 실제로 홈 추천 목록에 있었는지로 판정한다. markOrderConsumed보다 반드시 먼저 계산해야 한다.
+    const wasHomeRecommended = getRecommendedArticles(3).some(a => a.id === articleId);
+
+    markOrderConsumed(articleId);
     const isNewRead = recordArticleRead(articleId, source);
     if (!isNewRead) return null;
 
@@ -136,7 +198,7 @@ export const useGameState = () => {
       let conditionMet = false;
       if (activeMission.id === 'mission_01') conditionMet = todayCount >= 1;
       if (activeMission.id === 'mission_02') conditionMet = todayCount >= 2;
-      if (activeMission.id === 'mission_03') conditionMet = source === 'home_recommendation';
+      if (activeMission.id === 'mission_03') conditionMet = wasHomeRecommended;
       if (activeMission.id === 'mission_04') conditionMet = source === 'next_article';
 
       if (conditionMet) {
@@ -215,6 +277,8 @@ export const useGameState = () => {
     getActiveMissionIndex,
     getTodayArticleCompleteCount,
     hasReadArticleToday,
+    getRecommendedArticles,
+    getNextArticle,
     hasCompletedQuizToday,
     processArticleComplete,
     processQuizComplete,

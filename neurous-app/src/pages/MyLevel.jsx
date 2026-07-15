@@ -66,9 +66,16 @@ export default function MyLevel() {
     };
   }, [bgTopColor]);
 
-  const progressPercent = nextLevel
-    ? Math.min(100, ((xp - levelInfo.minXP) / (nextLevel.minXP - levelInfo.minXP)) * 100)
-    : 100;
+  // 실제로는 Lv.4 달성 지점(다음 레벨의 minXP)에 도달해야 MAX 상태다 — Lv.3 도달 시점(120 XP)이 아니라
+  // Lv.3 구간을 다 채우는 300 XP부터만 MAX로 전환한다. Lv.3의 다음 레벨(Lv.4)은 프로토타입에 없어 항상
+  // Lv.3에 머무르지만, 그 이후에도 XP는 계속 누적되므로 이 시점부터 MAX 상태로 표시한다.
+  const isMaxLevel = !!nextLevel && xp >= nextLevel.minXP;
+
+  const progressPercent = isMaxLevel
+    ? 100
+    : nextLevel
+      ? Math.min(100, ((xp - levelInfo.minXP) / (nextLevel.minXP - levelInfo.minXP)) * 100)
+      : 100;
 
   const xpDenominator = nextLevel ? nextLevel.minXP : xp;
 
@@ -98,7 +105,7 @@ export default function MyLevel() {
         {/* XP 카드 — 배경 위에 떠 있는(Floating) 카드, 사방 모서리 라운드 */}
         <div className="absolute left-5 right-5 z-10" style={{ top: '53%' }}>
           <div className="bg-white/75 backdrop-blur-sm border-[3px] border-white rounded-2xl px-6 pt-6 pb-5 flex flex-col gap-3">
-            {/* Lv + 성장 단계 보기 */}
+            {/* Lv + 성장 가이드 보기 */}
             <div className="flex items-center justify-between w-full">
               <span className="font-title text-[24px] font-bold text-[#19181E]">
                 Lv. {levelInfo.level}
@@ -107,7 +114,7 @@ export default function MyLevel() {
                 className="bg-[#E8E9EF] rounded-[30px] px-3 py-1.5 text-[12px] font-medium text-[#767C91] active:opacity-60"
                 onClick={() => navigate('/growth')}
               >
-                성장 단계 보기
+                성장 가이드 보기
               </button>
             </div>
 
@@ -126,10 +133,10 @@ export default function MyLevel() {
             {/* 경험치 수치 */}
             <div className="flex items-center justify-between w-full">
               <span className="text-[14px] text-[#767C91]">
-                경험치 {xp} / {xpDenominator}
+                {isMaxLevel ? `경험치 ${xp} XP` : `경험치 ${xp} / ${xpDenominator}`}
               </span>
               <span className="font-title text-[20px] font-bold text-[#6F44F5]">
-                {Math.round(progressPercent)}%
+                {isMaxLevel ? 'MAX' : `${Math.round(progressPercent)}%`}
               </span>
             </div>
           </div>
@@ -173,6 +180,7 @@ export default function MyLevel() {
               storage.setXP(0);
               localStorage.removeItem('all_missions_bonus');
               articles.forEach(a => localStorage.removeItem(`quiz_done_${a.id}`));
+              storage.setConsumedOrders([]);
             }}
           >
             오늘 읽기 기록 초기화

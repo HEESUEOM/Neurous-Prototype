@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   COMPLETED_MISSIONS: 'completed_missions',
   ATTENDANCE: 'attendance',
   ARTICLE_READ_HISTORY: 'article_read_history',
+  RECOMMENDATION_CONSUMED_ORDERS: 'recommendation_consumed_orders',
 };
 
 const get = (key, fallback) => {
@@ -46,6 +47,9 @@ export const useStorage = () => {
   const getArticleReadHistory = () => get(STORAGE_KEYS.ARTICLE_READ_HISTORY, []);
   const setArticleReadHistory = (history) => { set(STORAGE_KEYS.ARTICLE_READ_HISTORY, history); refresh(); };
 
+  const getConsumedOrders = () => get(STORAGE_KEYS.RECOMMENDATION_CONSUMED_ORDERS, []);
+  const setConsumedOrders = (orders) => { set(STORAGE_KEYS.RECOMMENDATION_CONSUMED_ORDERS, orders); refresh(); };
+
   return {
     getUserCode, setUserCode,
     getXP, setXP,
@@ -53,5 +57,6 @@ export const useStorage = () => {
     getCompletedMissions, setCompletedMissions,
     getAttendance, setAttendance,
     getArticleReadHistory, setArticleReadHistory,
+    getConsumedOrders, setConsumedOrders,
   };
 };

@@ -18,10 +18,13 @@ export default function GrowthStages() {
   const currentLevelInfo = getLevelByXP(xp);
   const nextLevel = getNextLevel(currentLevelInfo.level);
   const remainingXP = nextLevel ? Math.max(0, nextLevel.minXP - xp) : 0;
+  // Lv.3 도달 시점(120 XP)이 아니라, Lv.3 구간을 다 채우는 300 XP(Lv.4 도달 지점)부터만
+  // "다음 단계까지 필요한 XP" 안내를 숨기고 MAX 상태로 취급한다.
+  const isMaxLevel = !!nextLevel && xp >= nextLevel.minXP;
 
   return (
     <div className="min-h-dvh bg-white">
-      <NavHeader title="성장 단계 보기" />
+      <NavHeader title="성장 가이드" />
 
       <div className="px-5 pt-3 pb-10 flex flex-col gap-9">
         {/* 현재 경험치 카드 */}
@@ -33,12 +36,14 @@ export default function GrowthStages() {
                 <span>{xp}</span>
                 <span>XP</span>
               </div>
-              <div className="text-[14px] leading-[1.35] text-[#9EA5BB]">
-                <p className="m-0">다음 단계 달성을 위해서는</p>
-                <p className="m-0">
-                  <span className="text-[#6F44F5]">{remainingXP} XP</span>가 더 필요해요
-                </p>
-              </div>
+              {!isMaxLevel && (
+                <div className="text-[14px] leading-[1.35] text-[#9EA5BB]">
+                  <p className="m-0">다음 단계 달성을 위해서는</p>
+                  <p className="m-0">
+                    <span className="text-[#6F44F5]">{remainingXP} XP</span>가 더 필요해요
+                  </p>
+                </div>
+              )}
             </div>
           </div>
           <img src="/assets/XP.png" alt="XP" className="w-[92px] h-[92px] object-contain flex-shrink-0" draggable={false} />

@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useRef, useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { articles } from '../data/articles';
 import { MISSIONS } from '../data/missions';
 import ArticleCard from '../components/article/ArticleCard';
 import BottomTabBar from '../components/layout/BottomTabBar';
@@ -45,7 +44,7 @@ function MissionSlide({ mission, isCompleted, isActive, isLocked }) {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { storage, hasReadArticleToday } = useGameState();
+  const { storage, hasReadArticleToday, getRecommendedArticles } = useGameState();
   const completedMissions = storage.getCompletedMissions();
   const rawActiveIndex = MISSIONS.findIndex(m => !completedMissions.includes(m.id));
   const activeIndex = rawActiveIndex >= 0 ? rawActiveIndex : 0;
@@ -59,10 +58,9 @@ export default function Home() {
     el.scrollLeft = activeIndex * el.clientWidth;
   }, []);
 
-  // 오늘 읽지 않은 글을 우선 노출하고, 부족한 자리는 이미 읽은 글로 채워 항상 3개를 유지한다.
-  const unreadArticles = articles.filter(a => !hasReadArticleToday(a.id));
-  const readArticles = articles.filter(a => hasReadArticleToday(a.id));
-  const recommendedArticles = [...unreadArticles, ...readArticles].slice(0, 3);
+  // 추천 순서(order) 기준으로 아직 소진하지 않은 뉴스 3개를 노출한다.
+  // 12개를 모두 소진하면 다음 사이클로 리셋되어 order 1부터 다시 노출된다.
+  const recommendedArticles = getRecommendedArticles(3);
 
   const handleScroll = () => {
     const el = carouselRef.current;
@@ -120,7 +118,7 @@ export default function Home() {
         {/* 추천 글 섹션 */}
         <div className="px-5 flex flex-col gap-6">
           <div className="flex flex-col gap-1">
-            <h1 className="font-title text-[24px] text-[#19181E]">추천 글</h1>
+            <h1 className="font-title text-[24px] text-[#19181E]">추천 뉴스</h1>
             <p className="text-[16px] font-medium text-[#ADB3C5]">짧은 읽기부터 시작해 하루 한 걸음 성장해보세요.</p>
           </div>
           <div className="flex flex-col gap-6">
